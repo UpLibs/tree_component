@@ -1,4 +1,5 @@
 name: tree_component
-version: 0.0.1
-author: Marcos Benatti Lauer (benatti77@gmail.com)
+version: 0.1.1
+author: Marcos Benatti Lauer <benatti77@gmail.com>
 description: A pub package
+homepage: https://github.com/UpLibs/

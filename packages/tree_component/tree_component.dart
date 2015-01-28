@@ -109,6 +109,7 @@ class TreeNodeComponent {
       } else {
         _node.checked = true;
       }
+      _node.listener.onCheckAction(_node);
     });
 
     if (_node.hasChildren) {
@@ -151,6 +152,7 @@ class TreeNodeComponent {
           _treeComponent._buildNodeChildren(_node);
           buildContent();
         }
+        _node.listener.onExpandAction(_node);
       });
 
     }
@@ -247,9 +249,7 @@ class TreeNode {
 
 abstract class TreeNodeListener {
 
-  //TODO not implemented
   onCheckAction(TreeNode node);
-  //TODO not implemented
   onExpandAction(TreeNode node);
   onClickAction(TreeNode node);
 

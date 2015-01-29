@@ -10,18 +10,22 @@ class TreeComponent {
 
   Element _parentElement;
 
-  void buildAt(Element parentElement) {
+  void buildAt(Element parentElement,[int margin = 0]) {
     if (this._parentElement != null) remove();
 
     this._parentElement = parentElement;
 
-    _buildNode(parentElement, _root);
+    _buildNode(parentElement, _root , margin);
   }
 
-  void _buildNode(Element parentElement, TreeNode node) {
+  void _buildNode(Element parentElement, TreeNode node,[int margin]) {
 
+    if(margin == null) {
+      margin = -10;
+    }
     UListElement elem = new UListElement();
     elem.style.listStyleType = 'none';
+    elem.style.marginLeft = margin.toString()+"px";
 
     node._treeElement = elem;
 
@@ -109,6 +113,8 @@ class TreeNodeComponent {
       } else {
         _node.checked = true;
       }
+      
+      if(_node.listener != null)
       _node.listener.onCheckAction(_node);
     });
 
@@ -152,6 +158,8 @@ class TreeNodeComponent {
           _treeComponent._buildNodeChildren(_node);
           buildContent();
         }
+        //TODO null nos listeners
+        if(_node.listener != null)
         _node.listener.onExpandAction(_node);
       });
 
@@ -161,9 +169,23 @@ class TreeNodeComponent {
     ..text = _node.name;
     
     spanElementName.onClick.listen((L){
+      if(_node.listener != null)
       _node.listener.onClickAction(_node);
     });
     
+
+    if(_node.properties['color']!=null){
+      LabelElement colorLabel = new LabelElement()
+      ..id="color"
+      ..style.backgroundColor=_node.properties['color']
+       ..htmlFor=checkBox.id
+      ..style.margin="3px"
+      ..style.fontSize="80%"
+      ..style.verticalAlign="text-top"
+      ..setInnerHtml("&nbsp;&nbsp;&nbsp;")
+      ;
+      _element.children.add(colorLabel);
+    }
     _element.children.add(checkBox);
     _element.children.add(spanElementName); //TODO adicionar listener aqui!
 

@@ -29,7 +29,16 @@ class TreeComponent {
   void _buildNode(Element parentElement, TreeNode node) {
     UListElement elem = new UListElement();
     elem.style.listStyleType = 'none';
-    elem.style.marginLeft = "10px";
+    
+    int margin = 0 ;
+    
+    if (!node.hasChildren) margin += 16 ;
+    
+    if (node.properties['color'] == null) margin += 10+(3*2) ;
+    
+    if (margin > 0) {
+      elem.style.marginLeft = "${margin}px";
+    }
     
     elem.style.paddingLeft = "${_margin}px";
 
@@ -177,14 +186,18 @@ class TreeNodeComponent {
     });
 
     if(_node.properties['color']!=null){
-      LabelElement colorLabel = new LabelElement()
+      DivElement colorLabel = new DivElement()
       ..id="color"
       ..style.backgroundColor=_node.properties['color']
-       ..htmlFor=checkBox.id
+      //..style.htmlFor=checkBox.id
       ..style.margin="3px"
-      ..style.fontSize="80%"
-      ..style.verticalAlign="text-top"
-      ..setInnerHtml("&nbsp;&nbsp;&nbsp;")
+      ..style.width ="10px"
+      ..style.height ="10px"
+      ..style.fontSize="30%"
+      ..style.display="inline-block"
+      ..style.verticalAlign="7px"
+      ..style.borderRadius= '5px'
+      ..setInnerHtml("&nbsp;")
       ;
       _element.children.add(colorLabel);
     }

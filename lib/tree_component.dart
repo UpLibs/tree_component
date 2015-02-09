@@ -4,15 +4,33 @@ import 'dart:html';
 
 class TreeComponent {
 
-  TreeNode _root;
+  List<TreeNode> _roots;
 
-  TreeComponent(this._root);
-
-  Element _parentElement;
+  TreeComponent(TreeNode roots) {
+    _roots = [roots] ;
+  }
   
+  TreeComponent.multipleRoots(this._roots);
+
+  TreeNode getNodeByID(String id) {
+    for (var root in roots) {
+      var found = root.getNodeByID(id) ;
+      if (found != null) return found ;
+    }
+    return null ;
+  }
+  
+  Element _parentElement;
   int _margin ;
 
+  int get margin => _margin ;
+  set margin(int size) => _margin = size != null ? ( size >= 0 ? size : 0 ) : DEFAULT_MARGIN ; 
+
   static const int DEFAULT_MARGIN = 16 ;
+  
+  List<TreeNode> get roots => new List.from( _roots ) ;
+  int get rootsSize => _roots.length ;
+  bool get hasMultipleRoots => roots.length > 1 ;
   
   void buildAt(Element parentElement,[int margin = DEFAULT_MARGIN]) {
     if (this._parentElement != null) remove();
@@ -20,13 +38,43 @@ class TreeComponent {
     this._parentElement = parentElement;
     this._margin = margin != null ? margin : DEFAULT_MARGIN ;
 
-    _buildNode(parentElement, _root);
+    _buildTree(parentElement);
   }
   
-  int get margin => _margin ;
-  set margin(int size) => _margin = size != null ? ( size >= 0 ? size : 0 ) : DEFAULT_MARGIN ; 
+  void rebuild() {
+    _buildTree(this._parentElement);
+  }
+  
+  UListElement _elemUlRoot ;
+  
+  void _buildTree(Element parentElement) {
+    
+    if (_elemUlRoot != null) {
+      _elemUlRoot.remove() ;
+    }
+    
+    _elemUlRoot = new UListElement();
+    _elemUlRoot.style.listStyleType = 'none';
+    _elemUlRoot.style.paddingLeft = "0px";
 
+    parentElement.children.add(_elemUlRoot);
+   
+    for (var root in _roots) {
+      _buildNode(_elemUlRoot, root) ;
+    }
+    
+  }
+  
   void _buildNode(Element parentElement, TreeNode node) {
+    
+    if ( node.isHidden ) {
+      return ;
+    }
+    
+    if ( node._component != null ) {
+      node._component.remove() ;
+    }
+    
     UListElement elem = new UListElement();
     elem.style.listStyleType = 'none';
     
@@ -69,8 +117,15 @@ class TreeComponent {
 
   void remove() {
     if (this._parentElement == null) return;
+    
+    if (_elemUlRoot != null) {
+      _elemUlRoot.remove() ;
+      _elemUlRoot = null ;
+    }
 
-    _removeNode(_root);
+    for (var root in _roots) {
+      _removeNode(root);  
+    }
   }
 
   void _removeNode(TreeNode node) {
@@ -131,6 +186,8 @@ class TreeNodeComponent {
     this._element = new LIElement();
     buildContent();
   }
+  
+  CheckboxInputElement checkBox;
 
   void buildContent() {
 
@@ -138,7 +195,7 @@ class TreeNodeComponent {
       child.remove();
     }
 
-    CheckboxInputElement checkBox = new CheckboxInputElement();
+    checkBox = new CheckboxInputElement();
     checkBox.checked = _node.isChecked;
 
     checkBox.onClick.listen((_) {
@@ -178,7 +235,7 @@ class TreeNodeComponent {
     }
 
     SpanElement spanElementName = new SpanElement()
-    ..text = _node.name;
+    ..text = _node.label;
     
     spanElementName.onClick.listen((L){
       if(_node.listener != null)
@@ -216,21 +273,25 @@ class TreeNodeComponent {
 
 
 class TreeNode {
-  String name;
+  String label;
   Map properties;
+  String id;
 
   TreeNode _parent;
   List<TreeNode> _children = [];
 
-  bool _expanded = false;
-  bool _checked = false;
+  bool _hidden = false ;
+  
+  bool _expanded ;
+  bool _checked ;
 
-  TreeNode.root(this.name, [this.properties, this._expanded = true, this._checked = true]) {
+  TreeNode.root(this.label, this.id, [this.properties,this._checked = true, this._expanded = true ]) {
     checkInit();
   }
 
-  TreeNode.node(this._parent, this.name, [this.properties, this._expanded = false, this._checked = false]) {
+  TreeNode.node(this._parent, this.label, this.id, [this.properties, this._checked = false, this._expanded = false]) {
     checkInit();
+    _parent._children.add(this);
   }
 
   void checkInit() {
@@ -244,10 +305,48 @@ class TreeNode {
   bool get hasChildren => _children.isNotEmpty;
   bool get isExpanded => _expanded;
   bool get isChecked => _checked;
-
-  set checked(bool checked) => _checked = checked;
+  
+  bool get isHidden => _hidden ;
+  
+  TreeNode getNodeByID(String id) {
+    if ( this.id == id ) return this ;
+    
+    for (var node in _children) {
+      var found = node.getNodeByID(id) ;
+      if (found != null) return found ;
+    }
+    
+    return null ;
+  }
+  
+  List<TreeNode> getAllSubNodes( [bool addThisNode = true] ){
+    List<TreeNode> all = [] ;
+    
+    if (addThisNode) all.add(this) ;
+    
+    _addAllSubNodes(all) ;
+    
+    return all ;
+  }
+  
+  void _addAllSubNodes(List<TreeNode> all){
+    for (var node in _children) {
+      all.add(node) ;
+      node._addAllSubNodes(all) ;
+    }
+  }
+  
+  set checked(bool checked) {
+    _checked = checked;
+        
+    if(_component !=null && _component.checkBox != null) {
+      this._component.checkBox.checked = _checked;
+    }  
+  }
+  
   set expanded(bool expanded) => _expanded = expanded;
-
+  set hidden(bool hidden) => _hidden = hidden;
+  
   List<TreeNode> get children => _children;
 
   TreeNode get parent => _parent;
@@ -262,9 +361,8 @@ class TreeNode {
     throw new StateError("Invalid tree structure");
   }
 
-  TreeNode createChild(String name, [Map properties, bool expanded = false]) {
-    var child = new TreeNode.node(this, name, properties, expanded);
-    this._children.add(child);
+  TreeNode createChild(String name, String id, [Map properties, bool expanded = false]) {
+    var child = new TreeNode.node(this, name, id, properties, expanded);
     return child;
   }
 

@@ -1,5 +1,5 @@
 name: tree_component
-version: 0.2.5
+version: 0.2.6
 author: Marcos Benatti Lauer <benatti77@gmail.com>
-description: A pub package
+description: tree component write in pure dart
 homepage: https://github.com/UpLibs/tree_component

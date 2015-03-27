@@ -18,7 +18,8 @@ void main() {
 }
 
 build_tree(Element parentElement){
-  var root = new TreeNode.root("the-root") ;
+  TreeNode root = new TreeNode.root("ALL", "ALL") ;
+  root.listener = new GenericNodeListener() ;
   
   root.listener = new RootNodeListener();
   
@@ -40,24 +41,24 @@ build_tree(Element parentElement){
   Map prop6 = new Map();
   prop6['color'] = '#963258';
   
-  var treeNode = root.createChild('sub1-a')
+  var treeNode = root.createChild('sub1-a','sub1-a')
 //  ..createChild('sub2-a')
 //  ..createChild('sub2-b')
   ;
   
   treeNode.listener = new RootNodeListener();
   
-  treeNode.createChild('sub2-c').properties=prop;
-  treeNode.createChild('sub2-d').properties=prop2;
-  treeNode.createChild('sub2-e').properties=prop3;
-  treeNode.createChild('sub2-f').properties=prop4;
-  treeNode.createChild('sub2-g').properties=prop5;
-  treeNode.createChild('sub2-h').properties=prop6;
+  treeNode.createChild('sub2-c', 'sub2-c').properties=prop;
+  treeNode.createChild('sub2-d', 'sub2-d').properties=prop2;
+  treeNode.createChild('sub2-e', 'sub2-e').properties=prop3;
+  treeNode.createChild('sub2-f', 'sub2-f').properties=prop4;
+  treeNode.createChild('sub2-g', 'sub2-g').properties=prop5;
+  treeNode.createChild('sub2-h', 'sub2-h').properties=prop6;
 
   treeNode.properties = prop;
   
-  root.createChild('sub1-b')
-  ..createChild('sub2-a') ;
+  root.createChild('sub1-b','sub1-b')
+  ..createChild('sub2-a'.'sub2-a') ;
   
   var tree = new TreeComponent(root) ;
   
